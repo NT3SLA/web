@@ -1,0 +1,186 @@
+﻿<div id="tableBlock"></div>
+<div id="editBlock">
+    <p><b>Редактирование фильма</b></p>
+    <table>
+        <tr><td><input type="hidden" id="editId" /></td><td></td></tr>
+        <tr><td><label>Название: </label></td><td><input type="text" id="editName" /></td></tr>
+        <tr><td><label>Режиссер: </label></td><td><input type="text" id="editDirector" /></td></tr>
+        <tr><td><label>Год: </label></td><td><input type="number" id="editYear" /></td></tr>
+        <tr><td><label>Жанр: </label></td><td><input type="number" id="editGenre" /></td></tr>
+        <tr><td><label>Страна: </label></td><td><input type="number" id="editCountry" /></td></tr>
+        <tr><td><label>Длительность: </label></td><td><input type="number" id="editDuration" /></td></tr>
+    </table>
+    <button id="editFilm">Изменить</button>
+</div>
+<div id="addBlock">
+    <p><b>Добавление фильма</b></p>
+    <table>
+        <tr><td><input type="hidden" id="editId" /></td><td></td></tr>
+        <tr><td><label>Название: </label></td><td><input type="text" id="addName" /></td></tr>
+        <tr><td><label>Режиссер: </label></td><td><input type="text" id="addDirector" /></td></tr>
+        <tr><td><label>Год: </label></td><td><input type="number" id="addYear" /></td></tr>
+        <tr><td><label>Жанр: </label></td><td><input type="number" id="addGenre" /></td></tr>
+        <tr><td><label>Страна: </label></td><td><input type="number" id="addCountry" /></td></tr>
+        <tr><td><label>Длительность: </label></td><td><input type="number" id="addDuration" /></td></tr>
+    </table>
+    <button id="addFilm">Добавить</button>
+</div>
+@section scripts
+{
+    <script type="text/javascript">
+    $(document).ready(function () {
+
+        GetAllFilms();
+
+        $("#editBook").click(function (event) {
+            event.preventDefault();
+            editFilm();
+        });
+
+        $("#addBook").click(function (event) {
+            event.preventDefault();
+            addFilm();
+        });
+
+    });
+    // Получение всех фильмов по ajax-запросу
+    function GetAllFilms() {
+
+        $("#addBlock").css('display', 'block');
+        $("#editBlock").css('display', 'none');
+        $.ajax({
+            url: '/api/values',
+            type: 'GET',
+            dataType: 'json',
+            success: function (data) {
+                WriteResponse(data);
+            },
+            error: function (x, y, z) {
+                alert(x + '\n' + y + '\n' + z);
+            }
+        });
+    }
+ // Добавление нового фильма
+    function AddFilm() {
+        // получаем значения для добавляемого фильма
+        var film = {
+            Name: $('#addName').val(),
+            Director: $('#addDirector').val(),
+            Year: $('#addYear').val(),
+            Genre: $('#addGenre').val(),
+            Country: $('#addCountry').val(),
+            Duration: $('#addDuration').val()
+        };
+
+        $.ajax({
+            url: '/api/values/',
+            type: 'POST',
+            data: JSON.stringify(film),
+            contentType: "application/json; charset=utf-8",
+            success: function (data) {
+                GetAllFilms();
+            },
+            error: function (x, y, z) {
+                alert(x + '\n' + y + '\n' + z);
+            }
+        });
+    }
+ // Удаление фильма
+    function DeleteFilm(id) {
+
+        $.ajax({
+            url: '/api/values/' + id,
+            type: 'DELETE',
+            contentType: "application/json;charset=utf-8",
+            success: function (data) {
+                GetAllFilms();
+            },
+            error: function (x, y, z) {
+                alert(x + '\n' + y + '\n' + z);
+            }
+        });
+    }
+    // редактирование фильма
+    function EditFilm() {
+        var id = $('#editId').val()
+        // получаем новые значения для редактируемого фильма
+        var film = {
+            Name: $('#addName').val(),
+            Director: $('#addDirector').val(),
+            Year: $('#addYear').val(),
+            Genre: $('#addGenre').val(),
+            Country: $('#addCountry').val(),
+            Duration: $('#addDuration').val()
+        };
+        $.ajax({
+            url: '/api/values/' + id,
+            type: 'PUT',
+            data: JSON.stringify(film),
+            contentType: "application/json; charset=utf-8",
+            success: function (data) {
+                GetAllFilms();
+            },
+            error: function (x, y, z) {
+                alert(x + '\n' + y + '\n' + z);
+            }
+        });
+    }
+ // вывод полученных данных на экран
+    function WriteResponse(books) {
+        var strResult = "<table><th>ID</th><th>Название</th><th>Автор</th><th>Год издания</th>";
+        $.each(films, function (index, film) {
+            strResult += "<tr><td>" + film.Id + "</td><td>" + film.Name + "</td><td>" +
+              film.Director + "</td><td>" + film.Year + "</td><td>" + film.Genre + "</td><td>" + film.Country + "</td><td>"
+                    + film.Duration + "</td><td>"
+            "</td><td><a id='editItem' data-item='" + film.Id + "'onclick='EditItem(this);' >Редактировать</a></td>" +
+            "<td><a id='delItem' data-item='" + film.Id + "'onclick='DeleteItem(this);'>Удалить</a></td></tr>";
+        });
+        strResult += "</table>";
+        $("#tableBlock").html(strResult);
+
+    }
+    // обработчик удаления
+    function DeleteItem(el) {
+        // получаем id удаляемого объекта
+        var id = $(el).attr('data-item');
+        DeleteFilm(id);
+    }
+    // обработчик редактирования
+    function EditItem (el) {
+        // получаем id редактируемого объекта
+        var id = $(el).attr('data-item');
+        GetFilm(id);
+    }
+    // вывод данных редактируемого фильма в поля для редактирования
+    function ShowFilm(film) {
+        if (book != null) {
+            $("#addBlock").css('display', 'none');
+            $("#editBlock").css('display', 'block');
+            $("#editId").val(book.Id);
+            $("#editName").val(book.Name);
+            $("#editDirector").val(film.Director);
+            $("#editYear").val(film.Year);
+            $("#editGenre").val(film.Genre);
+            $("#editCountry").val(film.Country);
+            $("#editDuration").val(film.Duration);
+        }
+        else {
+            alert("Такая книга не существует");
+        }
+    }
+    // запрос фильма на редактирование
+    function GetFilm(id) {
+        $.ajax({
+            url: '/api/values/' + id,
+            type: 'GET',
+            dataType: 'json',
+            success: function (data) {
+                ShowFilm(data);
+            },
+            error: function (x, y, z) {
+                alert(x + '\n' + y + '\n' + z);
+            }
+        });
+    }
+    </script>
+}
