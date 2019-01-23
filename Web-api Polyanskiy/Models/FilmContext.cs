@@ -13,5 +13,6 @@ namespace Web_api_Polyanskiy.Models
         }
 
         public DbSet<Film> Films { get; set; }
+        public DbSet<Comment> Comments { get; set; }
     }
 }
